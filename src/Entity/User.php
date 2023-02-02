@@ -2,9 +2,13 @@
 
 namespace App\Entity;
 
-use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use JMS\Serializer\Annotation\Groups;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -15,6 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getUsers"])]
     private ?int $id = null;
 
     #[Assert\NotBlank]
@@ -22,9 +27,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: 'L\'email {{ value }} n\'est pas un mail valide.',
     )]
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(["getUsers"])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(["getUsers"])]
     private array $roles = [];
 
     #[Assert\Length(
@@ -42,10 +49,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers"])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers"])]
     private ?string $postalCode = null;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Favorites::class)]
+    #[Groups(["getUsers"])]
+    private Collection $favorites;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["getUsers"])]
+    private ?\DateTimeInterface $birthdayDate = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(["getUsers"])]
+    private ?string $company = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(["getUsers"])]
+    private ?string $phoneNumbers = null;
+
+    public function __construct()
+    {
+        $this->favorites = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -137,6 +167,72 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPostalCode(string $postalCode): self
     {
         $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Favorites>
+     */
+    public function getFavorites(): Collection
+    {
+        return $this->favorites;
+    }
+
+    public function addFavorite(Favorites $favorite): self
+    {
+        if (!$this->favorites->contains($favorite)) {
+            $this->favorites->add($favorite);
+            $favorite->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFavorite(Favorites $favorite): self
+    {
+        if ($this->favorites->removeElement($favorite)) {
+            // set the owning side to null (unless already changed)
+            if ($favorite->getUser() === $this) {
+                $favorite->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getBirthdayDate(): ?\DateTimeInterface
+    {
+        return $this->birthdayDate;
+    }
+
+    public function setBirthdayDate(\DateTimeInterface $birthdayDate): self
+    {
+        $this->birthdayDate = $birthdayDate;
+
+        return $this;
+    }
+
+    public function getCompany(): ?string
+    {
+        return $this->company;
+    }
+
+    public function setCompany(string $company): self
+    {
+        $this->company = $company;
+
+        return $this;
+    }
+
+    public function getPhoneNumbers(): ?string
+    {
+        return $this->phoneNumbers;
+    }
+
+    public function setPhoneNumbers(string $phoneNumbers): self
+    {
+        $this->phoneNumbers = $phoneNumbers;
 
         return $this;
     }

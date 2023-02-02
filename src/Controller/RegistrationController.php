@@ -23,6 +23,12 @@ class RegistrationController extends AbstractController
         $email = $decoded->email;
         $plaintextPassword = $decoded->password;
         $postalCode = $decoded->postalCode;
+        $birthdayDate = $decoded->birthdayDate;
+        $company = $decoded->company;
+        $phoneNumbers = $decoded->phoneNumbers;
+        $username = $decoded->username;
+
+        $dobReconverted = \DateTime::createFromFormat('Y-m-d', $birthdayDate); 
   
         $user = new User();
         $hashedPassword = $passwordHasher->hashPassword(
@@ -31,15 +37,18 @@ class RegistrationController extends AbstractController
         );
         $user->setPassword($hashedPassword);
         $user->setEmail($email);
-        $user->setUsername($email);
+        $user->setUsername($username);
         $user->setPostalCode($postalCode);
+        $user->setBirthdayDate($dobReconverted);
+        $user->setCompany($company);
+        $user->setPhoneNumbers($phoneNumbers);
 
         $errors = $validator->validate($user);
 
         if (count($errors) > 0) {
-  
             return $this->json(['error' => 'Email non valide']);
         }
+
         $em->persist($user);
         $em->flush();
   
