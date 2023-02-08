@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class FavoritesController extends AbstractController
 {
-    #[Route('/api/favorites/add', name: 'addFavorites', methods:['POST'])]
+    #[Route('/api/favorites/add', name: 'add_favorites', methods:['POST'])]
     public function addFavorite(EntityManagerInterface $entityManager, Request $request, SerializerInterface $serializerInterface, ValidatorInterface $validator): JsonResponse
     {
         $decoded = json_decode($request->getContent());
