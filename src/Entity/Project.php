@@ -50,6 +50,12 @@ class Project
     #[Groups(["getProject"])]
     private ?User $user = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $phoneNumbers = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $status = null;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -170,6 +176,30 @@ class Project
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getPhoneNumbers(): ?int
+    {
+        return $this->phoneNumbers;
+    }
+
+    public function setPhoneNumbers(?int $phoneNumbers): self
+    {
+        $this->phoneNumbers = $phoneNumbers;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

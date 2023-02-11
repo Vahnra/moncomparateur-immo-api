@@ -6,6 +6,7 @@ use DateTime;
 use App\Entity\Comment;
 use App\Entity\Project;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Id;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -102,6 +103,23 @@ class ProjectController extends AbstractController
 
         $entityManager->persist($updatedProject);
         $entityManager->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/api/project/status/{id}', name: 'update_project_status', methods:['PUT'])]
+    public function updateProjectStatus(string $id, EntityManagerInterface $entityManager, SerializerInterface $SymfonySerializer, Request $request): JsonResponse
+    {
+        $project = $entityManager->getRepository(Project::class)->findOneBy(['id' => $id]);
+
+        $decoded = json_decode($request->getContent());
+        
+        if ($project) {
+            $project->setStatus($decoded->status);
+            $entityManager->persist($project);
+            $entityManager->flush();
+            return new JsonResponse(null, Response::HTTP_OK, []);
+        }
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
