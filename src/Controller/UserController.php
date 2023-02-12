@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Project;
 use App\Entity\User;
 use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,4 +72,23 @@ class UserController extends AbstractController
 
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
+
+    #[Route('/api/stats-user', name: 'stats_user', methods:['GET'])]
+    public function statsUser(User $user, EntityManagerInterface $entityManager, Request $request, SerializerInterface $serializer): JsonResponse
+    {    
+        $test = [];
+
+        array_push($test, count($entityManager->getRepository(Project::class)->findBy(['user' => $this->getUser(), 'status' => 'prospection'])));
+
+        array_push($test, count($entityManager->getRepository(Project::class)->findBy(['user' => $this->getUser(), 'status' => 'estimation'])));
+
+        array_push($test, count($entityManager->getRepository(Project::class)->findBy(['user' => $this->getUser(), 'status' => 'mandat'])));
+
+        array_push($test, count($entityManager->getRepository(Project::class)->findBy(['user' => $this->getUser(), 'status' => 'visite'])));
+
+        array_push($test, count($entityManager->getRepository(Project::class)->findBy(['user' => $this->getUser(), 'status' => 'contre-visite'])));
+
+        return new JsonResponse($test, Response::HTTP_OK, []);
+    }
+
 }

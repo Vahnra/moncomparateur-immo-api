@@ -51,9 +51,11 @@ class Project
     private ?User $user = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["getProject"])]
     private ?int $phoneNumbers = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getProject"])]
     private ?string $status = null;
 
     public function __construct()

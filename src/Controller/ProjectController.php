@@ -36,7 +36,7 @@ class ProjectController extends AbstractController
         $project->setCreatedAt(new DateTime());
         $project->setUpdatedAt(new DateTime());
 
-        if ($decoded->comments) {
+        if ($decoded->comments != null) {
             $comment = new Comment;
             $comment->setText($decoded->comments);
             $comment->setUser($this->getUser());
@@ -45,22 +45,62 @@ class ProjectController extends AbstractController
             $comment->setUpdatedAt(new DateTime());
 
             $project->addComment($comment);
+            $entityManager->persist($comment);
+            $errorsComment = $validator->validate($comment);
         }
 
         $errorsProject = $validator->validate($project);
-        $errorsComment = $validator->validate($comment);
+        
 
         if (count($errorsProject) > 0 || count($errorsComment) > 0) {
             return new JsonResponse($errorsProject, Response::HTTP_BAD_REQUEST, []);
         }
         
         $entityManager->persist($project);
-        $entityManager->persist($comment);
         $entityManager->flush();
 
         $serialized = $serializer->serialize($project, 'json', ['groups' => 'getProject']);
 
         return new JsonResponse($serialized, Response::HTTP_OK, []);
+    }
+
+    #[Route('/api/project/add-from-marker', name: 'add_project_from_marker', methods:['POST'])]
+    public function addProjectFromMarker(Project $project, EntityManagerInterface $entityManager, Request $request, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
+    {
+        $project = $serializer->deserialize($request->getContent(), Project::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $project]);
+
+        if ($entityManager->getRepository(Project::class)->findOneBy(['adress' => $project->getAdress()])) {
+            return new JsonResponse(null, Response::HTTP_BAD_REQUEST, []);
+        }
+        
+        // $decoded = json_decode($request->getContent());
+
+        // $project = new Project();
+        // $project->setType($decoded->type);
+        // $project->setCity($decoded->city);
+        // $project->setCity($decoded->city);
+        // $project->setAdress($decoded->adress);
+        // $project->setComplementAdress($decoded->complementAdress);
+        $project->setUser($this->getUser());
+        $project->setCreatedAt(new DateTime());
+        $project->setUpdatedAt(new DateTime());
+        $project->setStatus('prospection');
+
+        $errorsProject = $validator->validate($project);
+        
+
+        if (count($errorsProject) > 0) {
+            return new JsonResponse($errorsProject, Response::HTTP_BAD_REQUEST, []);
+        }
+        
+        $entityManager->persist($project);
+        $entityManager->flush();
+
+        $serialized = $serializer->serialize($project, 'json', ['groups' => 'getProject']);
+
+        $projectId = $project->getId();
+        
+        return new JsonResponse($projectId, Response::HTTP_OK, []);
     }
 
     #[Route('/api/project/all-project', name: 'get_all_project', methods:['GET'])]
@@ -104,7 +144,7 @@ class ProjectController extends AbstractController
         $entityManager->persist($updatedProject);
         $entityManager->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK, []);
     }
 
     #[Route('/api/project/status/{id}', name: 'update_project_status', methods:['PUT'])]
