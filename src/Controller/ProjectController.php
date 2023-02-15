@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Calendar;
 use DateTime;
 use App\Entity\Comment;
 use App\Entity\Project;
@@ -35,8 +36,28 @@ class ProjectController extends AbstractController
         $project->setUser($this->getUser());
         $project->setCreatedAt(new DateTime());
         $project->setUpdatedAt(new DateTime());
+        $project->setStatus("prospection");
 
-        if ($decoded->comments != null) {
+        
+        if ($decoded->calendarTitle) {
+            $calendar = new Calendar();
+            $calendar->setTitle($decoded->calendarTitle);
+            $calendar->setStart(new DateTime($decoded->calendarStart));
+            $calendar->setUser($this->getUser());
+            $calendar->setColor('#ad2121');
+            $calendar->setAllDay(true);
+
+            $errorsCalendarEvent = $validator->validate($calendar);
+
+            if (count($errorsCalendarEvent) > 0) {
+                return new JsonResponse($errorsCalendarEvent, Response::HTTP_BAD_REQUEST, []);
+            }
+
+            $entityManager->persist($calendar);
+        }
+        
+
+        if ($decoded->comments) {
             $comment = new Comment;
             $comment->setText($decoded->comments);
             $comment->setUser($this->getUser());
@@ -47,12 +68,16 @@ class ProjectController extends AbstractController
             $project->addComment($comment);
             $entityManager->persist($comment);
             $errorsComment = $validator->validate($comment);
+
+            if (count($errorsComment) > 0) {
+                return new JsonResponse($errorsComment, Response::HTTP_BAD_REQUEST, []);
+            }
         }
 
         $errorsProject = $validator->validate($project);
         
 
-        if (count($errorsProject) > 0 || count($errorsComment) > 0) {
+        if (count($errorsProject) > 0) {
             return new JsonResponse($errorsProject, Response::HTTP_BAD_REQUEST, []);
         }
         

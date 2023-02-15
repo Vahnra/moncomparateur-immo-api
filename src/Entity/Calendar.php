@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\CalendarRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+use App\Repository\CalendarRepository;
 
 #[ORM\Entity(repositoryClass: CalendarRepository::class)]
 class Calendar
@@ -12,24 +13,30 @@ class Calendar
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getCalendars"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'calendars')]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["getCalendars"])]
     private ?\DateTimeInterface $start = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(["getCalendars"])]
     private ?\DateTimeInterface $end = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getCalendars"])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getCalendars"])]
     private ?string $color = null;
 
     #[ORM\Column]
+    #[Groups(["getCalendars"])]
     private ?bool $allDay = null;
 
     public function getId(): ?int
