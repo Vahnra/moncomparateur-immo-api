@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Project;
 use App\Entity\User;
+use App\Entity\Project;
 use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializer;
 
 class UserController extends AbstractController
@@ -49,6 +50,27 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/api/user-password/{id}', name: 'update_user_password', methods:['PUT'])]
+    public function updateUserPassword(User $user, EntityManagerInterface $entityManager, SymfonySerializer $SymfonySerializer, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        $decoded = json_decode($request->getContent());
+
+        if ($passwordHasher->isPasswordValid($user, $decoded->oldPassword)) {
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $decoded->password
+            );
+            $user->setPassword($hashedPassword);
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            return new JsonResponse("success", Response::HTTP_OK, []);
+        }
+
+        return new JsonResponse(null, Response::HTTP_BAD_REQUEST);
     }
 
     #[Route('/api/user/{id}', name: 'delete_user', methods:['DELETE'])]
@@ -90,5 +112,6 @@ class UserController extends AbstractController
 
         return new JsonResponse($test, Response::HTTP_OK, []);
     }
+
 
 }

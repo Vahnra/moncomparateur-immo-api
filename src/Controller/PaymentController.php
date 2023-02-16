@@ -45,4 +45,16 @@ class PaymentController extends AbstractController
 
         return new JsonResponse($payment->getCheckoutUrl(), Response::HTTP_OK, []);
     }
+
+    #[Route('/payment-web-hook', name: 'update_order_payment_status')]
+    public function updateOrderPaymentStats(Order $payment, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $mollie = new MollieApiClient();
+        $mollie->setApiKey("test_fxypAGNWGrb54W9zagd4FuUtQMKgnn");
+        
+        $payment = $mollie->payments->get($_POST["id"]);
+        $orderId = $payment->metadata->order_id;
+
+        return new JsonResponse(null, Response::HTTP_OK, []);
+    }
 }
