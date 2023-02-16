@@ -63,7 +63,7 @@ class UserController extends AbstractController
     #[Route('/api/current-user', name: 'current_user', methods:['GET'])]
     public function currentUser(User $user, EntityManagerInterface $entityManager, Request $request, SerializerInterface $serializer): JsonResponse
     {
-        $userId = $this->getUser()->getId();  
+        $userId = $this->getUser();  
         
         if ($userId) {
             $jsonDetailUser = $serializer->serialize($userId, 'json');

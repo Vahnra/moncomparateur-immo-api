@@ -37,6 +37,7 @@ class RegistrationController extends AbstractController
         );
         $user->setPassword($hashedPassword);
         $user->setEmail($email);
+        $user->setRoles(['free']);
         $user->setUsername($username);
         $user->setPostalCode($postalCode);
         $user->setBirthdayDate($dobReconverted);

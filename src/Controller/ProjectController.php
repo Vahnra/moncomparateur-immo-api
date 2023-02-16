@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Calendar;
 use DateTime;
 use App\Entity\Comment;
+use App\Entity\Contact;
 use App\Entity\Project;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Id;
@@ -66,12 +67,28 @@ class ProjectController extends AbstractController
             $comment->setUpdatedAt(new DateTime());
 
             $project->addComment($comment);
-            $entityManager->persist($comment);
             $errorsComment = $validator->validate($comment);
 
             if (count($errorsComment) > 0) {
                 return new JsonResponse($errorsComment, Response::HTTP_BAD_REQUEST, []);
             }
+
+            $entityManager->persist($comment);
+        }
+
+        if ($decoded->contact) {
+            $contact = new Contact;
+            $contact->setUser($this->getUser());
+            $contact->setName($decoded->name);
+            $contact->setAdress($decoded->adress);
+            $contact->setPhone($decoded->phone_numbers);
+
+            $errorsContact = $validator->validate($contact);
+            if (count($errorsContact) > 0) {
+                return new JsonResponse($errorsContact, Response::HTTP_BAD_REQUEST, []);
+            }
+
+            $entityManager->persist($contact);
         }
 
         $errorsProject = $validator->validate($project);
