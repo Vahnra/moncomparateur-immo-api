@@ -60,15 +60,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(["getUsers"])]
     private Collection $favorites;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups(["getUsers"])]
     private ?\DateTimeInterface $birthdayDate = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(["getUsers"])]
     private ?string $company = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(["getUsers"])]
     private ?string $phoneNumbers = null;
 
@@ -86,6 +86,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Order::class)]
     private Collection $orders;
+
+    #[ORM\Column(length: 255)]
+    private ?string $accountType = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $companyCode = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $status = null;
 
     public function __construct()
     {
@@ -403,6 +412,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAccountType(): ?string
+    {
+        return $this->accountType;
+    }
+
+    public function setAccountType(string $accountType): self
+    {
+        $this->accountType = $accountType;
+
+        return $this;
+    }
+
+    public function getCompanyCode(): ?string
+    {
+        return $this->companyCode;
+    }
+
+    public function setCompanyCode(?string $companyCode): self
+    {
+        $this->companyCode = $companyCode;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

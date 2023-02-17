@@ -20,39 +20,82 @@ class RegistrationController extends AbstractController
           
         $em = $doctrine->getManager();
         $decoded = json_decode($request->getContent());
-        $email = $decoded->email;
-        $plaintextPassword = $decoded->password;
-        $postalCode = $decoded->postalCode;
-        $birthdayDate = $decoded->birthdayDate;
-        $company = $decoded->company;
-        $phoneNumbers = $decoded->phoneNumbers;
-        $username = $decoded->username;
 
-        $dobReconverted = \DateTime::createFromFormat('Y-m-d', $birthdayDate); 
-  
-        $user = new User();
-        $hashedPassword = $passwordHasher->hashPassword(
-            $user,
-            $plaintextPassword
-        );
-        $user->setPassword($hashedPassword);
-        $user->setEmail($email);
-        $user->setRoles(['free']);
-        $user->setUsername($username);
-        $user->setPostalCode($postalCode);
-        $user->setBirthdayDate($dobReconverted);
-        $user->setCompany($company);
-        $user->setPhoneNumbers($phoneNumbers);
+        if ($decoded->type == 'user') {
+            $email = $decoded->email;
+            $plaintextPassword = $decoded->password;
+            $postalCode = $decoded->postalCode;
+            $birthdayDate = $decoded->birthdayDate;
+            $company = $decoded->company;
+            $phoneNumbers = $decoded->phoneNumbers;
+            $username = $decoded->username;
 
-        $errors = $validator->validate($user);
+            $dobReconverted = \DateTime::createFromFormat('Y-m-d', $birthdayDate); 
+    
+            $user = new User();
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $plaintextPassword
+            );
 
-        if (count($errors) > 0) {
-            return $this->json(['error' => 'Email non valide']);
+            $user->setAccountType($decoded->type);
+            $user->setPassword($hashedPassword);
+            $user->setEmail($email);
+            $user->setRoles(['free']);
+            $user->setUsername($username);
+            $user->setPostalCode($postalCode);
+            $user->setBirthdayDate($dobReconverted);
+            $user->setCompany($company);
+            $user->setPhoneNumbers($phoneNumbers);
+
+            $errors = $validator->validate($user);
+
+            if (count($errors) > 0) {
+                return $this->json(['error' => 'Email non valide']);
+            }
+
+            $em->persist($user);
+            $em->flush();
+    
+            return $this->json(['message' => 'Registered Successfully']);
         }
 
-        $em->persist($user);
-        $em->flush();
-  
-        return $this->json(['message' => 'Registered Successfully']);
+        if ($decoded->type == 'agence') {
+            $email = $decoded->email;
+            $plaintextPassword = $decoded->password;
+            $postalCode = $decoded->postalCode;
+            $company = $decoded->company;
+            $phoneNumbers = $decoded->phoneNumbers;
+            $username = $decoded->username;
+
+    
+            $user = new User();
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $plaintextPassword
+            );
+
+            $user->setAccountType($decoded->type);
+            $user->setPassword($hashedPassword);
+            $user->setEmail($email);
+            $user->setRoles(['ROLE_USER']);
+            $user->setStatus('free');
+            $user->setUsername($username);
+            $user->setPostalCode($postalCode);
+            $user->setCompany($company);
+            $user->setPhoneNumbers($phoneNumbers);
+
+            $errors = $validator->validate($user);
+
+            if (count($errors) > 0) {
+                return $this->json(['error' => 'Email non valide']);
+            }
+
+            $em->persist($user);
+            $em->flush();
+    
+            return $this->json(['message' => 'Registered Successfully']);
+        }
+        
     }
 }
